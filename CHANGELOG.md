@@ -1,5 +1,9 @@
 # changelog
 
+### 2026-10-22 · CI: lint, types, tests, image build + trivy
+`ci/github-actions`
+- ci workflow + multi-stage non-root Dockerfile
+
 ### 2026-10-21 · webhook endpoint with signature verification
 `feat/webhook-edge`
 - config via pydantic-settings
