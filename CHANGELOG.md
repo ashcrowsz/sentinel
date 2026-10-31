@@ -1,5 +1,10 @@
 # changelog
 
+### 2026-10-31 · repo-context MCP server
+`feat/repo-context-mcp`
+- repo index: search, definitions, references, tests-for
+- expose the repo index as a FastMCP server
+
 ### 2026-10-29 · review agent with structured findings
 `feat/review-agent`
 - unified diff parser that tracks new-file line numbers
