@@ -1,0 +1,16 @@
+title: "Paginate orders"
+body: "Adds page/size params to the orders endpoint."
+planted:
+  - file: app/orders.py
+    line: 23
+    kind: off_by_one
+diff: |
+  diff --git a/app/orders.py b/app/orders.py
+  --- a/app/orders.py
+  +++ b/app/orders.py
+  @@ -20,2 +20,6 @@ def list_orders(db, page: int = 1, size: int = 20):
+       orders = db.all_orders()
+  +    if page < 1:
+  +        raise ValueError("page starts at 1")
+  +    start = page * size
+  +    return orders[start : start + size]

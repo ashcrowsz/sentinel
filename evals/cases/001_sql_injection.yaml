@@ -1,0 +1,16 @@
+title: "Add user lookup by id"
+body: "Small helper for the admin page."
+planted:
+  - file: app/users.py
+    line: 11
+    kind: sql_injection
+diff: |
+  diff --git a/app/users.py b/app/users.py
+  --- a/app/users.py
+  +++ b/app/users.py
+  @@ -10,3 +10,4 @@ def get_user(db, user_id):
+       conn = db.connect()
+  -    q = "SELECT * FROM users WHERE id = %s"
+  +    q = f"SELECT * FROM users WHERE id = {user_id}"
+  +    rows = conn.execute(q)
+       return rows

@@ -1,0 +1,13 @@
+title: "Extract price formatting helper"
+body: "Pure refactor, no behaviour change."
+planted: []
+diff: |
+  diff --git a/app/money.py b/app/money.py
+  --- a/app/money.py
+  +++ b/app/money.py
+  @@ -1,0 +1,5 @@
+  +from decimal import ROUND_HALF_UP, Decimal
+  +
+  +
+  +def format_eur(cents: int) -> str:
+  +    return f"{(Decimal(cents) / 100).quantize(Decimal('0.01'), ROUND_HALF_UP)} EUR"
