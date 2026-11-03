@@ -1,0 +1,17 @@
+title: "Admin endpoint to delete a project"
+body: "Needed by support."
+planted:
+  - file: app/routes/projects.py
+    line: 41
+    kind: missing_auth_check
+diff: |
+  diff --git a/app/routes/projects.py b/app/routes/projects.py
+  --- a/app/routes/projects.py
+  +++ b/app/routes/projects.py
+  @@ -38,1 +38,6 @@ router = APIRouter()
+
+  +
+  +@router.delete("/projects/{project_id}")
+  +async def delete_project(project_id: int, db=Depends(get_db)):
+  +    await db.projects.delete(project_id)
+  +    return {"deleted": project_id}

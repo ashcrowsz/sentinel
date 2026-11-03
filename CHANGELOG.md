@@ -1,5 +1,11 @@
 # changelog
 
+### 2026-11-03 · seeded-PR eval harness
+`feat/eval-set`
+- eval harness: replay cases, score recall and FP/PR
+- seed cases: sqli, off-by-one, missing auth, clean refactor
+- case: prompt injection hiding an infinite retry
+
 ### 2026-10-31 · repo-context MCP server
 `feat/repo-context-mcp`
 - repo index: search, definitions, references, tests-for
