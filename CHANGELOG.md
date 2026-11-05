@@ -1,5 +1,10 @@
 # changelog
 
+### 2026-11-05 · GCP infra as code
+`infra/terraform`
+- terraform: vpc, firewall, artifact registry, k3s vm
+- workload identity federation: no JSON keys in github
+
 ### 2026-11-03 · seeded-PR eval harness
 `feat/eval-set`
 - eval harness: replay cases, score recall and FP/PR
