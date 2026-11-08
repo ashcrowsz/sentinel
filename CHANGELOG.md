@@ -1,5 +1,11 @@
 # changelog
 
+### 2026-11-08 · helm chart + gitops
+`deploy/helm-argocd`
+- helm chart: api + worker, hardened pods, probes
+- secrets from GCP secret manager via external-secrets
+- argo cd application + litellm budget config
+
 ### 2026-11-05 · GCP infra as code
 `infra/terraform`
 - terraform: vpc, firewall, artifact registry, k3s vm

@@ -1,0 +1,46 @@
+image:
+  repository: europe-west1-docker.pkg.dev/PROJECT/sentinel/sentinel
+  tag: latest
+  pullPolicy: IfNotPresent
+
+api:
+  replicas: 2
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 256Mi }
+
+worker:
+  replicas: 1
+  resources:
+    requests: { cpu: 250m, memory: 256Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+ingress:
+  enabled: true
+  host: sentinel.example.dev
+  className: traefik
+
+# secrets are synced from GCP Secret Manager by External Secrets Operator
+externalSecret:
+  enabled: true
+  secretStore: gcp-secret-manager
+  keys:
+    - GITHUB_WEBHOOK_SECRET
+    - GITHUB_PRIVATE_KEY
+    - LITELLM_API_KEY
+
+sandbox:
+  namespace: sentinel-sandbox
+  allowEgressTo: ["140.82.112.0/20"]  # github.com, init container only
+
+otel:
+  endpoint: http://otel-collector.observability:4317
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth: { enabled: false }
+
+postgresql:
+  enabled: true
+  auth: { database: sentinel, username: sentinel, existingSecret: sentinel-db }
