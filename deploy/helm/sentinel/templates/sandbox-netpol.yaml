@@ -1,0 +1,31 @@
+# Sandbox pods run model-generated code. Default: no ingress, no egress.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sandbox-deny-all
+  namespace: {{ .Values.sandbox.namespace }}
+spec:
+  podSelector:
+    matchLabels: { sentinel/role: sandbox }
+  policyTypes: [Ingress, Egress]
+  ingress: []
+  egress:
+    # DNS + github.com so the init container can clone. The test container
+    # shares the pod, which is why tests run with --no-index from pre-fetched wheels.
+    - to: [{ namespaceSelector: {}, podSelector: { matchLabels: { k8s-app: kube-dns } } }]
+      ports: [{ port: 53, protocol: UDP }]
+    {{- range .Values.sandbox.allowEgressTo }}
+    - to: [{ ipBlock: { cidr: {{ . }} } }]
+      ports: [{ port: 443, protocol: TCP }]
+    {{- end }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: sandbox-quota
+  namespace: {{ .Values.sandbox.namespace }}
+spec:
+  hard:
+    count/jobs.batch: "6"
+    limits.cpu: "8"
+    limits.memory: 8Gi

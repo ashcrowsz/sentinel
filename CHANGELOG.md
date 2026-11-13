@@ -1,5 +1,12 @@
 # changelog
 
+### 2026-11-13 · CI repair loop with sandboxed tests
+`feat/repair-loop`
+- repair budget + noise-tolerant failure fingerprints
+- guard: reject patches that skip, weaken or delete tests
+- sandbox job: non-root, no egress, cpu/mem/time limits
+- repair graph with a retry back-edge
+
 ### 2026-11-08 · helm chart + gitops
 `deploy/helm-argocd`
 - helm chart: api + worker, hardened pods, probes
