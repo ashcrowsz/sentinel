@@ -1,5 +1,9 @@
 # changelog
 
+### 2026-11-14 · release pipeline gated on evals
+`release/eval-gate`
+- release: eval gate -> publish via WIF -> bump gitops tag
+
 ### 2026-11-13 · CI repair loop with sandboxed tests
 `feat/repair-loop`
 - repair budget + noise-tolerant failure fingerprints
