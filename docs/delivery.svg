@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 250" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .bg { fill: #0d1117; }
+    .p { fill: #161b22; stroke: #30363d; stroke-width: 1.5; }
+    .g { fill: #12261a; stroke: #3fb950; stroke-width: 1.5; }
+    .t { fill: #e6edf3; font-size: 13.5px; font-weight: 600; }
+    .s { fill: #8b949e; font-size: 11px; }
+    .e { stroke: #8b949e; stroke-width: 2; fill: none; stroke-dasharray: 5 5; animation: d 1s linear infinite; }
+    @keyframes d { to { stroke-dashoffset: -20; } }
+    .pulse { animation: p 2.4s ease-in-out infinite; }
+    @keyframes p { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+  </style>
+  <defs><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect class="bg" width="960" height="250" rx="14"/>
+  <text x="30" y="38" fill="#e6edf3" font-size="20" font-weight="700">git push → running pod</text>
+  <text x="30" y="60" class="s">prompt changes go through the same gate as code changes</text>
+
+  <rect class="p" x="30" y="95" width="120" height="70" rx="10"/>
+  <text x="90" y="125" class="t" text-anchor="middle">PR</text>
+  <text x="90" y="145" class="s" text-anchor="middle">ruff · mypy · pytest</text>
+
+  <rect class="g pulse" x="180" y="95" width="130" height="70" rx="10"/>
+  <text x="245" y="125" class="t" text-anchor="middle">eval gate</text>
+  <text x="245" y="145" class="s" text-anchor="middle">recall ↓ or FP ↑ = ❌</text>
+
+  <rect class="p" x="340" y="95" width="130" height="70" rx="10"/>
+  <text x="405" y="125" class="t" text-anchor="middle">build + Trivy</text>
+  <text x="405" y="145" class="s" text-anchor="middle">CRITICAL/HIGH fail</text>
+
+  <rect class="p" x="500" y="95" width="140" height="70" rx="10"/>
+  <text x="570" y="125" class="t" text-anchor="middle">Artifact Registry</text>
+  <text x="570" y="145" class="s" text-anchor="middle">push via WIF, no keys</text>
+
+  <rect class="p" x="670" y="95" width="120" height="70" rx="10"/>
+  <text x="730" y="125" class="t" text-anchor="middle">gitops repo</text>
+  <text x="730" y="145" class="s" text-anchor="middle">bump image tag</text>
+
+  <rect class="g" x="820" y="95" width="110" height="70" rx="10"/>
+  <text x="875" y="125" class="t" text-anchor="middle">Argo CD</text>
+  <text x="875" y="145" class="s" text-anchor="middle">sync k3s</text>
+
+  <path class="e" d="M150 130 H176" marker-end="url(#m)"/>
+  <path class="e" d="M310 130 H336" marker-end="url(#m)"/>
+  <path class="e" d="M470 130 H496" marker-end="url(#m)"/>
+  <path class="e" d="M640 130 H666" marker-end="url(#m)"/>
+  <path class="e" d="M790 130 H816" marker-end="url(#m)"/>
+
+  <text x="480" y="205" class="s" text-anchor="middle">rollback = git revert on the gitops repo. Infra (VPC, registry, VM, IAM, WIF) is all Terraform with remote state in GCS.</text>
+</svg>

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .bg { fill: #0d1117; }
+    .card { fill: #161b22; stroke: #30363d; stroke-width: 1.5; }
+    .hot { fill: #1f2a1f; stroke: #3fb950; stroke-width: 1.5; }
+    .warn { fill: #2a1f1f; stroke: #f85149; stroke-width: 1.5; }
+    .t { fill: #e6edf3; font-size: 15px; font-weight: 600; }
+    .s { fill: #8b949e; font-size: 12px; }
+    .lbl { fill: #7d8590; font-size: 11px; font-style: italic; }
+    .flow { stroke: #58a6ff; stroke-width: 2; fill: none; stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .flow2 { stroke: #3fb950; stroke-width: 2; fill: none; stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .flow3 { stroke: #d29922; stroke-width: 2; fill: none; stroke-dasharray: 4 5; animation: dash 1.6s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset: -24; } }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect class="bg" width="960" height="440" rx="14"/>
+  <text x="30" y="38" fill="#e6edf3" font-size="20" font-weight="700">sentinel · how a PR flows through</text>
+  <text x="30" y="60" class="s">webhook in, review comments or a fix PR out. The agent never pushes to your branch.</text>
+
+  <!-- GitHub -->
+  <rect class="card" x="30" y="110" width="150" height="80" rx="10"/>
+  <text x="105" y="145" class="t" text-anchor="middle">GitHub</text>
+  <text x="105" y="165" class="s" text-anchor="middle">PR opened / CI red</text>
+
+  <!-- API -->
+  <rect class="card" x="250" y="110" width="160" height="80" rx="10"/>
+  <text x="330" y="140" class="t" text-anchor="middle">API · FastAPI</text>
+  <text x="330" y="160" class="s" text-anchor="middle">verify HMAC</text>
+  <text x="330" y="176" class="s" text-anchor="middle">route → 202 in ms</text>
+
+  <!-- Queue -->
+  <rect class="card" x="480" y="110" width="140" height="80" rx="10"/>
+  <text x="550" y="145" class="t" text-anchor="middle">Redis queue</text>
+  <text x="550" y="165" class="s" text-anchor="middle">arq · idempotent ids</text>
+
+  <!-- Worker -->
+  <rect class="hot" x="690" y="90" width="240" height="120" rx="10"/>
+  <text x="810" y="120" class="t" text-anchor="middle">Worker · LangGraph</text>
+  <text x="810" y="145" class="s" text-anchor="middle">review: parse → context → LLM → filter</text>
+  <text x="810" y="165" class="s" text-anchor="middle">repair: patch → guard → test → decide</text>
+  <text x="810" y="190" class="lbl" text-anchor="middle">confidence floor · comment cap · no nits</text>
+
+  <path class="flow" d="M180 150 H246" marker-end="url(#a)"/>
+  <text x="213" y="140" class="lbl" text-anchor="middle">webhook</text>
+  <path class="flow" d="M410 150 H476" marker-end="url(#a)"/>
+  <path class="flow" d="M620 150 H686" marker-end="url(#a)"/>
+
+  <!-- tools row -->
+  <rect class="card" x="470" y="280" width="170" height="76" rx="10"/>
+  <text x="555" y="310" class="t" text-anchor="middle">repo-context MCP</text>
+  <text x="555" y="330" class="s" text-anchor="middle">search · read · refs · tests</text>
+
+  <rect class="card" x="660" y="280" width="130" height="76" rx="10"/>
+  <text x="725" y="310" class="t" text-anchor="middle">LiteLLM</text>
+  <text x="725" y="330" class="s" text-anchor="middle">budget · fallback</text>
+
+  <rect class="warn" x="810" y="280" width="130" height="76" rx="10"/>
+  <text x="875" y="306" class="t" text-anchor="middle">Sandbox Job</text>
+  <text x="875" y="325" class="s" text-anchor="middle">non-root · no net</text>
+  <text x="875" y="341" class="s" text-anchor="middle">2 CPU · 2 GiB · 5 min</text>
+
+  <path class="flow3" d="M760 210 L590 276" marker-end="url(#y)"/>
+  <path class="flow3" d="M790 210 L735 276" marker-end="url(#y)"/>
+  <path class="flow3" d="M850 210 L870 276" marker-end="url(#y)"/>
+
+  <!-- back to GitHub -->
+  <path class="flow2" d="M700 200 C 560 250, 260 260, 110 194" marker-end="url(#g)"/>
+  <text x="330" y="262" fill="#3fb950" font-size="12" text-anchor="middle">inline review  ·  or  ·  sentinel/fix-* PR for a human</text>
+
+  <!-- observability strip -->
+  <rect x="30" y="388" width="900" height="34" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="480" y="410" class="s" text-anchor="middle">OpenTelemetry → Prometheus + Grafana  ·  Loki logs  ·  Langfuse traces  ·  Argo CD keeps it all in sync with Git</text>
+</svg>
