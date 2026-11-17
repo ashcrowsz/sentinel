@@ -66,9 +66,11 @@ def build_job_manifest(spec: SandboxSpec, name: str) -> dict[str, Any]:
                             "name": "fetch",
                             "image": "alpine/git:2.45.2",
                             "command": [
-                                "sh", "-c",
+                                "sh",
+                                "-c",
                                 f"git clone --quiet {spec.repo_url} /work/repo && "
-                                "pip download --quiet -d /work/wheels -r /work/repo/requirements.txt",
+                                "pip download --quiet -d /work/wheels "
+                                "-r /work/repo/requirements.txt",
                             ],
                             "volumeMounts": [{"name": "work", "mountPath": "/work"}],
                         }
@@ -78,7 +80,8 @@ def build_job_manifest(spec: SandboxSpec, name: str) -> dict[str, Any]:
                             "name": "tests",
                             "image": spec.image,
                             "command": [
-                                "bash", "-c",
+                                "bash",
+                                "-c",
                                 "pip install --quiet --no-index -f /work/wheels "
                                 "-r /work/repo/requirements.txt && " + script,
                             ],

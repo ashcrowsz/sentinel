@@ -14,6 +14,8 @@ env:
 
 jobs:
   eval-gate:
+    # needs the GCP project, WIF and LiteLLM secrets; skipped until they are configured
+    if: vars.GCP_PROJECT != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

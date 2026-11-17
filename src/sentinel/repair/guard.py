@@ -10,7 +10,14 @@ import re
 
 from sentinel.review.diff import looks_like_test
 
-PROTECTED_PREFIXES = (".github/", "pyproject.toml", "setup.cfg", "pytest.ini", "tox.ini", "conftest.py")
+PROTECTED_PREFIXES = (
+    ".github/",
+    "pyproject.toml",
+    "setup.cfg",
+    "pytest.ini",
+    "tox.ini",
+    "conftest.py",
+)
 SKIP_MARKERS = re.compile(r"(@pytest\.mark\.(skip|xfail)|pytest\.skip\(|unittest\.skip)")
 DELETED_FILE = re.compile(r"^deleted file mode", re.M)
 

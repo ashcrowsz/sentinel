@@ -38,7 +38,11 @@ async def run_review_job(ctx: dict[str, Any], raw: dict[str, Any]) -> dict[str, 
         diff = await get_pr_diff(gh, job.repo, job.pr_number)
         state = await run_review(ctx["review_graph"], pr["title"], pr.get("body") or "", diff)
         findings = state.get("findings", [])
-        summary = state["output"].summary if findings else "Sentinel looked, found nothing worth flagging. ✅"
+        summary = (
+            state["output"].summary
+            if findings
+            else "Sentinel looked, found nothing worth flagging. ✅"
+        )
         await post_review(gh, job.repo, job.pr_number, job.head_sha, summary, findings)
     log.info("reviewed %s#%s: %d comments", job.repo, job.pr_number, len(findings))
     return {"comments": len(findings), "cost_usd": state.get("cost_usd", 0.0)}
@@ -47,11 +51,15 @@ async def run_review_job(ctx: dict[str, Any], raw: dict[str, Any]) -> dict[str, 
 async def run_repair_job(ctx: dict[str, Any], raw: dict[str, Any]) -> dict[str, Any]:
     job = RepairJob.model_validate(raw)
     s = ctx["settings"]
-    budget = RepairBudget(max_iterations=s.sentinel_max_iterations, max_cost_usd=s.sentinel_max_cost_usd)
+    budget = RepairBudget(
+        max_iterations=s.sentinel_max_iterations, max_cost_usd=s.sentinel_max_cost_usd
+    )
     async with await ctx["gh"].client(job.installation_id) as gh:
         failure = await get_failed_job_logs(gh, job.repo, job.run_id)
     # TODO(#1): wire KubernetesSandbox (needs in-cluster credentials) into build_repair_graph.
-    log.info("repair requested for %s run %s (%d bytes of logs)", job.repo, job.run_id, len(failure))
+    log.info(
+        "repair requested for %s run %s (%d bytes of logs)", job.repo, job.run_id, len(failure)
+    )
     return {"status": "awaiting_sandbox", "budget_usd": budget.max_cost_usd}
 
 

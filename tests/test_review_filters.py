@@ -23,8 +23,14 @@ new file mode 100644
 
 
 def finding(**kw) -> Finding:
-    base = dict(file="app/users.py", line=11, severity="critical", category="security",
-                comment="SQL injection: user_id is interpolated into the query.", confidence=0.9)
+    base = dict(
+        file="app/users.py",
+        line=11,
+        severity="critical",
+        category="security",
+        comment="SQL injection: user_id is interpolated into the query.",
+        confidence=0.9,
+    )
     base.update(kw)
     return Finding(**base)
 
@@ -49,7 +55,9 @@ def test_drops_low_confidence_and_hallucinated_lines() -> None:
     files = parse_unified_diff(DIFF)
     out = filter_findings(
         [finding(confidence=0.3), finding(line=10), finding(file="nope.py")],
-        files, min_confidence=0.6, max_comments=5,
+        files,
+        min_confidence=0.6,
+        max_comments=5,
     )
     assert out == []
 
@@ -62,7 +70,9 @@ def test_drops_style_nits() -> None:
 
 def test_caps_and_sorts_by_severity() -> None:
     files = parse_unified_diff(DIFF)
-    low = finding(line=12, severity="medium", confidence=0.95, comment="rows may be unbound on error.")
+    low = finding(
+        line=12, severity="medium", confidence=0.95, comment="rows may be unbound on error."
+    )
     crit = finding()
     out = filter_findings([low, crit], files, min_confidence=0.5, max_comments=1)
     assert out == [crit]

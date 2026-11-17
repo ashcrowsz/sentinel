@@ -10,7 +10,16 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-IGNORED_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".mypy_cache", "dist", "build"}
+IGNORED_DIRS = {
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    "__pycache__",
+    ".mypy_cache",
+    "dist",
+    "build",
+}
 MAX_FILE_BYTES = 200_000
 
 

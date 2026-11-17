@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     critical = "critical"
     high = "high"
     medium = "medium"
     low = "low"
 
 
-class Category(str, Enum):
+class Category(StrEnum):
     bug = "bug"
     security = "security"
     missing_test = "missing_test"

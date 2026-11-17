@@ -27,7 +27,8 @@ class ArqQueue:
     async def enqueue(self, job: Job) -> str:
         pool = await self._get_pool()
         # job id = idempotency key: GitHub redelivers, we don't double-review
-        key = f"{job.kind}:{job.repo}:{getattr(job, 'pr_number', getattr(job, 'run_id', ''))}:{job.head_sha}"
+        target = getattr(job, "pr_number", getattr(job, "run_id", ""))
+        key = f"{job.kind}:{job.repo}:{target}:{job.head_sha}"
         await pool.enqueue_job(f"run_{job.kind}", job.model_dump(), _job_id=key)
         return key
 

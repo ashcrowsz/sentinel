@@ -31,8 +31,11 @@ def test_failed_pr_workflow_becomes_repair_job() -> None:
         "installation": {"id": 42},
         "repository": {"full_name": "me/playground"},
         "workflow_run": {
-            "id": 99, "conclusion": "failure", "head_branch": "feature/x",
-            "head_sha": "abc123", "pull_requests": [{"number": 7}],
+            "id": 99,
+            "conclusion": "failure",
+            "head_branch": "feature/x",
+            "head_sha": "abc123",
+            "pull_requests": [{"number": 7}],
         },
     }
     job = route_event("workflow_run", payload)
@@ -42,8 +45,13 @@ def test_failed_pr_workflow_becomes_repair_job() -> None:
 def test_failures_on_main_are_not_repaired() -> None:
     payload = {
         "action": "completed",
-        "workflow_run": {"id": 1, "conclusion": "failure", "head_branch": "main",
-                         "head_sha": "x", "pull_requests": []},
+        "workflow_run": {
+            "id": 1,
+            "conclusion": "failure",
+            "head_branch": "main",
+            "head_sha": "x",
+            "pull_requests": [],
+        },
     }
     assert route_event("workflow_run", payload) is None
 

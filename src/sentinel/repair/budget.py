@@ -10,10 +10,10 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class StopReason(str, Enum):
+class StopReason(StrEnum):
     fixed = "fixed"
     max_iterations = "max_iterations"
     budget = "budget"

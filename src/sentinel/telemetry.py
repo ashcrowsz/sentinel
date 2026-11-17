@@ -3,7 +3,8 @@ from __future__ import annotations
 from prometheus_client import Counter, Histogram
 
 REVIEW_SECONDS = Histogram(
-    "sentinel_review_duration_seconds", "Wall time per review",
+    "sentinel_review_duration_seconds",
+    "Wall time per review",
     buckets=(5, 15, 30, 60, 120, 300),
 )
 REVIEW_COMMENTS = Histogram(
@@ -19,4 +20,6 @@ def setup_tracing(service_name: str) -> None:
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
 
-    trace.set_tracer_provider(TracerProvider(resource=Resource.create({"service.name": service_name})))
+    trace.set_tracer_provider(
+        TracerProvider(resource=Resource.create({"service.name": service_name}))
+    )

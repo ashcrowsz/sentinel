@@ -53,6 +53,8 @@ class LLM:
             cost_usd=cost,
         )
 
-    async def complete_json(self, system: str, user: str, schema: dict[str, Any]) -> tuple[Any, LLMResult]:
+    async def complete_json(
+        self, system: str, user: str, schema: dict[str, Any]
+    ) -> tuple[Any, LLMResult]:
         res = await self.complete(system, user, json_schema=schema)
         return json.loads(res.text), res

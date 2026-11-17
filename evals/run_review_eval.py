@@ -50,7 +50,11 @@ def score(planted: list[dict], findings: list) -> tuple[int, int]:
     caught, matched = 0, set()
     for bug in planted:
         for i, f in enumerate(findings):
-            if i not in matched and f.file == bug["file"] and abs(f.line - bug["line"]) <= LINE_TOLERANCE:
+            if (
+                i not in matched
+                and f.file == bug["file"]
+                and abs(f.line - bug["line"]) <= LINE_TOLERANCE
+            ):
                 caught += 1
                 matched.add(i)
                 break
@@ -59,15 +63,25 @@ def score(planted: list[dict], findings: list) -> tuple[int, int]:
 
 async def run(cases_dir: Path) -> list[CaseResult]:
     s = get_settings()
-    graph = build_graph(LLM(s.litellm_base_url, s.litellm_api_key, s.sentinel_model), NoContext(), s)
+    graph = build_graph(
+        LLM(s.litellm_base_url, s.litellm_api_key, s.sentinel_model), NoContext(), s
+    )
     results: list[CaseResult] = []
     for path in sorted(cases_dir.glob("*.yaml")):
         case = yaml.safe_load(path.read_text())
         t0 = time.perf_counter()
         state = await run_review(graph, case["title"], case.get("body", ""), case["diff"])
         caught, fps = score(case.get("planted", []), state.get("findings", []))
-        results.append(CaseResult(path.stem, len(case.get("planted", [])), caught, fps,
-                                  state.get("cost_usd", 0.0), time.perf_counter() - t0))
+        results.append(
+            CaseResult(
+                path.stem,
+                len(case.get("planted", [])),
+                caught,
+                fps,
+                state.get("cost_usd", 0.0),
+                time.perf_counter() - t0,
+            )
+        )
         print(f"{path.stem:<32} caught {caught}/{len(case.get('planted', []))}  fp {fps}")
     return results
 

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     github_app_id: int = 0
-    github_webhook_secret: str = "change-me"
+    github_webhook_secret: str = "change-me"  # noqa: S105 (dev default)
     github_private_key_path: str = "./secrets/sentinel.private-key.pem"
     github_api_url: str = "https://api.github.com"
 

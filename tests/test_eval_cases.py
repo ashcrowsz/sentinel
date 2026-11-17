@@ -22,8 +22,14 @@ def test_planted_bugs_are_on_added_lines(path: Path) -> None:
 def test_scoring_matches_within_tolerance() -> None:
     from evals.run_review_eval import score
 
-    f = Finding(file="a.py", line=12, severity="high", category="bug",
-                comment="this loops forever on error", confidence=0.9)
+    f = Finding(
+        file="a.py",
+        line=12,
+        severity="high",
+        category="bug",
+        comment="this loops forever on error",
+        confidence=0.9,
+    )
     extra = f.model_copy(update={"file": "b.py"})
     assert score([{"file": "a.py", "line": 10}], [f, extra]) == (1, 1)
     assert score([{"file": "a.py", "line": 30}], [f]) == (0, 1)

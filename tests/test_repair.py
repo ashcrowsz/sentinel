@@ -69,7 +69,9 @@ def test_guard_rejects_ci_edits() -> None:
 
 
 def test_sandbox_job_is_locked_down() -> None:
-    spec = SandboxSpec(repo_url="https://github.com/me/p.git", sha="abcdef1234", patch_configmap="p1")
+    spec = SandboxSpec(
+        repo_url="https://github.com/me/p.git", sha="abcdef1234", patch_configmap="p1"
+    )
     m = build_job_manifest(spec, job_name("me/Playground", "abcdef1234", 1))
     pod = m["spec"]["template"]["spec"]
     assert m["metadata"]["name"] == "sbx-playground-abcdef12-1"
