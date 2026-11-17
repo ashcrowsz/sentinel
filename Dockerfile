@@ -9,7 +9,8 @@ RUN pip wheel --no-cache-dir --wheel-dir /wheels .
 # ---- runtime stage ----
 FROM python:3.12-slim
 # pick up Debian security fixes newer than the base image (Trivy gates on HIGH+)
-RUN apt-get update && apt-get upgrade -y --no-install-recommends \n    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 RUN useradd --uid 10001 --create-home sentinel
 WORKDIR /app
 COPY --from=build /wheels /wheels
