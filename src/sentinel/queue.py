@@ -29,7 +29,8 @@ class ArqQueue:
         # job id = idempotency key: GitHub redelivers, we don't double-review
         target = getattr(job, "pr_number", getattr(job, "run_id", ""))
         key = f"{job.kind}:{job.repo}:{target}:{job.head_sha}"
-        await pool.enqueue_job(f"run_{job.kind}", job.model_dump(), _job_id=key)
+        # must match the worker's function names (run_review_job / run_repair_job)
+        await pool.enqueue_job(f"run_{job.kind}_job", job.model_dump(), _job_id=key)
         return key
 
 

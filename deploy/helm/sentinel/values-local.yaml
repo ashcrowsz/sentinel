@@ -1,0 +1,18 @@
+# $0 local cluster (kind). Image is built locally and loaded with `kind load docker-image`.
+image:
+  repository: sentinel
+  tag: local
+  pullPolicy: Never
+
+api:
+  replicas: 1
+
+env:
+  SENTINEL_MODEL: reviewer
+  SENTINEL_REASONING_EFFORT: none
+  # LiteLLM from the docker compose stack, reached from inside kind via the host
+  LITELLM_BASE_URL: http://host.docker.internal:4000
+
+# create the secrets by hand instead (see DEMO.md, chapter 5)
+externalSecret:
+  enabled: false

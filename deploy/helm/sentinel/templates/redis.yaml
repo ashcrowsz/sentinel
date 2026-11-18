@@ -1,0 +1,37 @@
+{{- if .Values.redis.enabled }}
+# Single-replica Redis for the job queue. Jobs are idempotent and GitHub can
+# redeliver webhooks, so losing the queue on a restart is acceptable here.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-redis
+  labels: { app.kubernetes.io/name: sentinel, app.kubernetes.io/component: redis }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: sentinel, app.kubernetes.io/component: redis }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: sentinel, app.kubernetes.io/component: redis }
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 999 }
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args: ["--save", "", "--appendonly", "no"]
+          ports: [{ containerPort: 6379, name: redis }]
+          readinessProbe: { tcpSocket: { port: redis }, periodSeconds: 5 }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: sentinel-redis }
+spec:
+  selector: { app.kubernetes.io/name: sentinel, app.kubernetes.io/component: redis }
+  ports: [{ port: 6379, targetPort: redis, name: redis }]
+{{- end }}

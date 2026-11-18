@@ -81,3 +81,11 @@ def test_caps_and_sorts_by_severity() -> None:
 def test_github_comment_has_suggestion_block() -> None:
     c = finding(suggestion='    q = "SELECT * FROM users WHERE id = %s"').to_github_comment()
     assert c["path"] == "app/users.py" and c["line"] == 11 and "```suggestion" in c["body"]
+
+
+def test_parse_json_tolerates_fences_and_preamble() -> None:
+    from sentinel.llm import parse_json
+
+    assert parse_json('{"a": 1}') == {"a": 1}
+    assert parse_json('```json\n{"a": 1}\n```') == {"a": 1}
+    assert parse_json('Here you go:\n{"a": {"b": 2}}') == {"a": {"b": 2}}

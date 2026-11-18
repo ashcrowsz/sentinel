@@ -1,3 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: sentinel }
+automountServiceAccountToken: false
 {{- range $name, $cfg := dict "api" .Values.api "worker" .Values.worker }}
 ---
 apiVersion: apps/v1
@@ -29,14 +33,26 @@ spec:
           envFrom:
             - secretRef: { name: sentinel-secrets }
           env:
-            - { name: REDIS_URL, value: "redis://{{ $.Release.Name }}-redis-master:6379/0" }
-            - { name: OTEL_EXPORTER_OTLP_ENDPOINT, value: {{ $.Values.otel.endpoint | quote }} }
+            - { name: REDIS_URL, value: {{ $.Values.redisUrl | default "redis://sentinel-redis:6379/0" | quote }} }
+            - { name: GITHUB_PRIVATE_KEY_PATH, value: /app/secrets/sentinel.private-key.pem }
+            - { name: PYTHONDONTWRITEBYTECODE, value: "1" }
             - { name: OTEL_SERVICE_NAME, value: "sentinel-{{ $name }}" }
+            {{- range $k, $v := $.Values.env }}
+            - { name: {{ $k }}, value: {{ $v | quote }} }
+            {{- end }}
+          volumeMounts:
+            - { name: github-key, mountPath: /app/secrets, readOnly: true }
+            - { name: tmp, mountPath: /tmp }
           resources: {{- toYaml $cfg.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities: { drop: [ALL] }
+      volumes:
+        - name: github-key
+          secret: { secretName: sentinel-github-key, optional: true }
+        - name: tmp
+          emptyDir: {}
 {{- end }}
 ---
 apiVersion: v1

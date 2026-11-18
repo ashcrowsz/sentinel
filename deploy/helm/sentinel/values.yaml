@@ -15,32 +15,25 @@ worker:
     requests: { cpu: 250m, memory: 256Mi }
     limits: { cpu: "1", memory: 512Mi }
 
-ingress:
-  enabled: true
-  host: sentinel.example.dev
-  className: traefik
+# extra non-secret env for api + worker
+env:
+  SENTINEL_MODEL: reviewer
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability:4317
 
 # secrets are synced from GCP Secret Manager by External Secrets Operator
 externalSecret:
   enabled: true
   secretStore: gcp-secret-manager
   keys:
+    - GITHUB_APP_ID
     - GITHUB_WEBHOOK_SECRET
-    - GITHUB_PRIVATE_KEY
     - LITELLM_API_KEY
 
 sandbox:
   namespace: sentinel-sandbox
   allowEgressTo: ["140.82.112.0/20"]  # github.com, init container only
 
-otel:
-  endpoint: http://otel-collector.observability:4317
-
+# built-in single-replica Redis (templates/redis.yaml); point redisUrl elsewhere for a managed one
 redis:
   enabled: true
-  architecture: standalone
-  auth: { enabled: false }
-
-postgresql:
-  enabled: true
-  auth: { database: sentinel, username: sentinel, existingSecret: sentinel-db }
+redisUrl: redis://sentinel-redis:6379/0

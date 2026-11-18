@@ -64,7 +64,9 @@ def score(planted: list[dict], findings: list) -> tuple[int, int]:
 async def run(cases_dir: Path) -> list[CaseResult]:
     s = get_settings()
     graph = build_graph(
-        LLM(s.litellm_base_url, s.litellm_api_key, s.sentinel_model), NoContext(), s
+        LLM(s.litellm_base_url, s.litellm_api_key, s.sentinel_model, s.sentinel_reasoning_effort),
+        NoContext(),
+        s,
     )
     results: list[CaseResult] = []
     for path in sorted(cases_dir.glob("*.yaml")):

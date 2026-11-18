@@ -1,0 +1,20 @@
+# $0 setup: every alias points at LM Studio's OpenAI-compatible server on the host.
+# Load the models in LM Studio first (Developer tab -> Start server, port 1234).
+model_list:
+  - model_name: reviewer            # fast: fits in 8 GB VRAM, ~5 s per review
+    litellm_params:
+      model: openai/google/gemma-4-e4b
+      api_base: http://host.docker.internal:1234/v1
+      api_key: lm-studio
+  - model_name: reviewer-quality    # slower, better reasoning (27B, partly on CPU)
+    litellm_params:
+      model: openai/qwen3.8-27b-turbo-fable-cold-fusion-735-882-heretic-uncensored-neo-coder-max-mtp
+      api_base: http://host.docker.internal:1234/v1
+      api_key: lm-studio
+
+litellm_settings:
+  drop_params: true   # ignore params a local model doesn't support instead of failing
+
+router_settings:
+  num_retries: 1
+  timeout: 300

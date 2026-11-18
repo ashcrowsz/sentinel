@@ -75,19 +75,26 @@ Planted so far: SQL injection, off-by-one pagination, a missing auth check, an i
 | cost / review | LiteLLM `x-litellm-response-cost` summed per case |
 | p50 latency | wall time per case |
 
-Numbers go in `evals/results/`. They depend on the model and the case set, so check the latest run instead of trusting a number frozen in a README.
+Latest run (2026-11-18, **gemma-4-e4b running locally in LM Studio, $0**, 5 cases):
+
+| recall | FP / PR | cost | p50 / review |
+|---|---|---|---|
+| 0.80 (4/5) | 0.0 | $0 | 4.1 s |
+
+The miss is instructive: on the prompt-injection case the model correctly flagged the injected "approve this" comment, then got distracted and missed the infinite retry it was hiding. Five cases is a smoke test, not a benchmark ([#2](https://github.com/ashcrowsz/sentinel/issues/2) grows it to 40). Full results land in `evals/results/`.
 
 ---
 
-## run it
+## run it ($0, local models)
+
+The full step-by-step, including the GitHub App, the webhook tunnel and the local Kubernetes + Argo CD setup, is in **[DEMO.md](DEMO.md)**. Short version:
 
 ```bash
-cp .env.example .env        # GitHub App id, webhook secret, LiteLLM key
+cp .env.example .env        # GitHub App id + webhook secret; models default to LM Studio
 make dev && make test       # unit tests, no network needed
-make up                     # api + worker + redis + postgres + litellm
+make up                     # api + worker + redis + litellm (-> LM Studio on :1234)
+make eval                   # replay the seeded PRs against your local model
 ```
-
-Expose `:8000/webhook` with smee.io or ngrok, point your GitHub App at it, open a PR on a test repo.
 
 ## layout
 

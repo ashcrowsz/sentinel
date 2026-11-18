@@ -17,11 +17,25 @@ class LLMResult:
     cost_usd: float
 
 
+def parse_json(text: str) -> Any:
+    """Local models sometimes wrap JSON in ``` fences or add a preamble."""
+    t = text.strip()
+    if t.startswith("```"):
+        t = t.split("\n", 1)[1] if "\n" in t else t
+        t = t.rsplit("```", 1)[0]
+    start, end = t.find("{"), t.rfind("}")
+    if start > 0 and end > start:
+        t = t[start : end + 1]
+    return json.loads(t)
+
+
 class LLM:
-    def __init__(self, base_url: str, api_key: str, model: str) -> None:
+    def __init__(self, base_url: str, api_key: str, model: str, reasoning_effort: str = "") -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
+        # e.g. "none" for local reasoning models (gemma 4, qwen 3) to skip thinking tokens
+        self.reasoning_effort = reasoning_effort
 
     async def complete(
         self, system: str, user: str, *, json_schema: dict[str, Any] | None = None
@@ -30,13 +44,16 @@ class LLM:
             "model": self.model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             "temperature": 0,
+            "max_tokens": 4000,
         }
+        if self.reasoning_effort:
+            payload["reasoning_effort"] = self.reasoning_effort
         if json_schema:
             payload["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {"name": "output", "schema": json_schema, "strict": True},
             }
-        async with httpx.AsyncClient(timeout=120) as client:
+        async with httpx.AsyncClient(timeout=300) as client:
             r = await client.post(
                 f"{self.base_url}/v1/chat/completions",
                 headers={"Authorization": f"Bearer {self.api_key}"},
@@ -57,4 +74,4 @@ class LLM:
         self, system: str, user: str, schema: dict[str, Any]
     ) -> tuple[Any, LLMResult]:
         res = await self.complete(system, user, json_schema=schema)
-        return json.loads(res.text), res
+        return parse_json(res.text), res

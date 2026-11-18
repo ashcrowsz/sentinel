@@ -27,7 +27,9 @@ async def startup(ctx: dict[str, Any]) -> None:
     s = get_settings()
     ctx["settings"] = s
     ctx["gh"] = GitHubApp(s.github_app_id, s.github_private_key_path, s.github_api_url)
-    ctx["llm"] = LLM(s.litellm_base_url, s.litellm_api_key, s.sentinel_model)
+    ctx["llm"] = LLM(
+        s.litellm_base_url, s.litellm_api_key, s.sentinel_model, s.sentinel_reasoning_effort
+    )
     ctx["review_graph"] = build_graph(ctx["llm"], DiffOnlyContext(), s)
 
 
@@ -63,14 +65,16 @@ async def run_repair_job(ctx: dict[str, Any], raw: dict[str, Any]) -> dict[str, 
     return {"status": "awaiting_sandbox", "budget_usd": budget.max_cost_usd}
 
 
+def _redis_settings() -> Any:
+    from arq.connections import RedisSettings
+
+    return RedisSettings.from_dsn(get_settings().redis_url)
+
+
 class WorkerSettings:
+    # arq reads these as plain attributes, not methods
     functions = [run_review_job, run_repair_job]
     on_startup = startup
     max_jobs = 4
     job_timeout = 900
-
-    @staticmethod
-    def redis_settings() -> Any:
-        from arq.connections import RedisSettings
-
-        return RedisSettings.from_dsn(get_settings().redis_url)
+    redis_settings = _redis_settings()

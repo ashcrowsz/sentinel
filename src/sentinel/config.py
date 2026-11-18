@@ -18,7 +18,8 @@ class Settings(BaseSettings):
 
     litellm_base_url: str = "http://localhost:4000"
     litellm_api_key: str = "sk-local-dev"
-    sentinel_model: str = "claude-sonnet-5-5"
+    sentinel_model: str = "reviewer"  # a LiteLLM alias: the config decides which real model
+    sentinel_reasoning_effort: str = ""
 
     sentinel_min_confidence: float = 0.6
     sentinel_max_comments: int = 8

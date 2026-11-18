@@ -1,0 +1,20 @@
+# Argo CD on a local kind cluster, syncing straight from this GitHub repo.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sentinel
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ashcrowsz/sentinel.git
+    targetRevision: main
+    path: deploy/helm/sentinel
+    helm:
+      valueFiles: [values-local.yaml]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sentinel
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
