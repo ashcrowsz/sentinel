@@ -4,12 +4,12 @@ model_list:
   - model_name: reviewer            # fast: fits in 8 GB VRAM, ~5 s per review
     litellm_params:
       model: openai/google/gemma-4-e4b
-      api_base: http://host.docker.internal:1234/v1
+      api_base: os.environ/LMSTUDIO_API_BASE
       api_key: lm-studio
   - model_name: reviewer-quality    # slower, better reasoning (27B, partly on CPU)
     litellm_params:
       model: openai/qwen3.8-27b-turbo-fable-cold-fusion-735-882-heretic-uncensored-neo-coder-max-mtp
-      api_base: http://host.docker.internal:1234/v1
+      api_base: os.environ/LMSTUDIO_API_BASE
       api_key: lm-studio
 
 litellm_settings:

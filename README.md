@@ -87,7 +87,7 @@ The miss is instructive: on the prompt-injection case the model correctly flagge
 
 ## run it ($0, local models)
 
-The full step-by-step, including the GitHub App, the webhook tunnel and the local Kubernetes + Argo CD setup, is in **[DEMO.md](DEMO.md)**. Short version:
+Point a GitHub App's webhook at the api (a free tunnel like smee.io works) and it reviews PRs on your repos. To run it:
 
 ```bash
 cp .env.example .env        # GitHub App id + webhook secret; models default to LM Studio
