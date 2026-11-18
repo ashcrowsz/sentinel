@@ -89,3 +89,67 @@ def test_parse_json_tolerates_fences_and_preamble() -> None:
     assert parse_json('{"a": 1}') == {"a": 1}
     assert parse_json('```json\n{"a": 1}\n```') == {"a": 1}
     assert parse_json('Here you go:\n{"a": {"b": 2}}') == {"a": {"b": 2}}
+
+
+def fit(**kw) -> Finding:
+    files = parse_unified_diff(DIFF)
+    [out] = filter_findings([finding(**kw)], files, min_confidence=0.0, max_comments=5)
+    return out
+
+
+def test_multiline_suggestion_replaces_the_whole_range() -> None:
+    # the live bug: a 2-line fix posted on line 11 only left the old line 12 behind
+    out = fit(
+        end_line=12,
+        suggestion='q = "SELECT * FROM users WHERE id = %s"\nrows = conn.execute(q, (user_id,))',
+    )
+    c = out.to_github_comment()
+    assert (c["start_line"], c["line"]) == (11, 12)
+    assert c["start_side"] == c["side"] == "RIGHT"
+    # indentation restored from the original line
+    assert out.suggestion == (
+        '    q = "SELECT * FROM users WHERE id = %s"\n    rows = conn.execute(q, (user_id,))'
+    )
+
+
+def test_multiline_suggestion_without_end_line_is_dropped_comment_kept() -> None:
+    out = fit(suggestion="q = 1\nrows = conn.execute(q)")
+    assert out.suggestion is None and "SQL injection" in out.comment
+    assert "start_line" not in out.to_github_comment()
+
+
+def test_suggestion_range_outside_the_pr_is_dropped() -> None:
+    out = fit(end_line=13, suggestion="a\nb\nc")
+    assert out.suggestion is None and out.end_line is None
+
+
+def test_multiline_suggestion_without_end_line_inferred_when_obvious() -> None:
+    # gemma never sets end_line: a 2-line rewrite of lines 11-12 is still unambiguous
+    out = fit(
+        suggestion='q = "SELECT * FROM users WHERE id = %s"\nrows = conn.execute(q, (user_id,))'
+    )
+    c = out.to_github_comment()
+    assert (c["start_line"], c["line"]) == (11, 12)
+
+
+def test_prompt_shows_removed_lines_unnumbered() -> None:
+    text = render_for_prompt(parse_unified_diff(DIFF))
+    assert '      -     q = "SELECT * FROM users WHERE id = %s"' in text
+    assert text.index(" - ") < text.index("   11 + ")
+
+
+def test_prose_suggestion_is_dropped_comment_kept() -> None:
+    # the second live bug: advice in the suggestion block would replace the code with English
+    out = fit(suggestion="Use parameterized queries instead of string formatting.")
+    assert out.suggestion is None and "SQL injection" in out.comment
+
+
+def test_block_header_suggestion_is_allowed() -> None:
+    out = fit(suggestion="if user_id is None:")
+    assert out.suggestion == "    if user_id is None:"
+
+
+def test_single_line_suggestion_keeps_relative_indent() -> None:
+    out = fit(suggestion='q = "SELECT * FROM users WHERE id = %s"')
+    assert out.suggestion == '    q = "SELECT * FROM users WHERE id = %s"'
+    assert out.to_github_comment()["line"] == 11

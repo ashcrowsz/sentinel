@@ -1,5 +1,12 @@
 # changelog
 
+### 2026-11-18 · one-click suggestions you can actually click
+`fix/suggestion-ranges`
+- multi-line suggestions: comments span the replaced range (`start_line`..`line`)
+- the range is inferred when the model omits `end_line` but the rewrite is obvious
+- indentation re-based on the original line; prose or code that doesn't parse is dropped (the comment stays)
+- prompt shows removed lines, so suggestions can follow the code's existing conventions
+
 ### 2026-11-14 · release pipeline gated on evals
 `release/eval-gate`
 - release: eval gate -> publish via WIF -> bump gitops tag

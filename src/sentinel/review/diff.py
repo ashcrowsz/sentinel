@@ -13,6 +13,8 @@ class FileDiff:
     path: str
     added_lines: dict[int, str] = field(default_factory=dict)
     is_test: bool = False
+    # hunk lines in order, for the prompt: numbered '+' lines, unnumbered '-' lines
+    shown: list[str] = field(default_factory=list)
 
 
 def parse_unified_diff(diff: str) -> dict[str, FileDiff]:
@@ -39,8 +41,11 @@ def parse_unified_diff(diff: str) -> dict[str, FileDiff]:
             continue
         if raw.startswith("+"):
             current.added_lines[new_line] = raw[1:]
+            current.shown.append(f"{new_line:>5} + {raw[1:]}")
             new_line += 1
-        elif raw.startswith("-") or raw.startswith("\\"):
+        elif raw.startswith("-"):
+            current.shown.append(f"{'':>5} - {raw[1:]}")  # removed: context only
+        elif raw.startswith("\\"):
             continue
         else:
             new_line += 1
@@ -56,6 +61,6 @@ def render_for_prompt(files: dict[str, FileDiff], max_chars: int = 60_000) -> st
     out: list[str] = []
     for f in files.values():
         out.append(f"### {f.path}")
-        out.extend(f"{n:>5} + {text}" for n, text in sorted(f.added_lines.items()))
+        out.extend(f.shown)
     text = "\n".join(out)
     return text if len(text) <= max_chars else text[:max_chars] + "\n...[diff truncated]"

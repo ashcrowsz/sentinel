@@ -26,6 +26,8 @@ SEVERITY_ICON = {"critical": "🛑", "high": "⚠️", "medium": "🔎", "low": 
 class Finding(BaseModel):
     file: str
     line: int = Field(ge=1)
+    # last line the suggestion replaces (inclusive); None = just `line`
+    end_line: int | None = Field(default=None, ge=1)
     severity: Severity
     category: Category
     comment: str = Field(min_length=10, max_length=1200)
@@ -38,7 +40,13 @@ class Finding(BaseModel):
         body = f"{icon} **{label}** ({self.severity.value})\n\n{self.comment}"
         if self.suggestion:
             body += "\n\n```suggestion\n" + self.suggestion + "\n```"
-        return {"path": self.file, "line": self.line, "side": "RIGHT", "body": body}
+        comment: dict[str, Any] = {"path": self.file, "side": "RIGHT", "body": body}
+        if self.end_line and self.end_line > self.line:
+            # multi-line comment: GitHub's suggestion then replaces the whole range
+            comment.update(start_line=self.line, start_side="RIGHT", line=self.end_line)
+        else:
+            comment["line"] = self.line
+        return comment
 
 
 class ReviewOutput(BaseModel):
