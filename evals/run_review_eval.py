@@ -16,8 +16,10 @@ import asyncio
 import json
 import sys
 import time
+import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -25,6 +27,7 @@ from sentinel.config import get_settings
 from sentinel.llm import LLM
 from sentinel.review.agent import build_graph, run_review
 from sentinel.review.diff import FileDiff
+from sentinel.tracing import enabled as tracing_enabled
 
 MIN_RECALL = 0.70
 MAX_FP_PER_PR = 0.5
@@ -72,8 +75,17 @@ async def run(cases_dir: Path) -> list[CaseResult]:
     for path in sorted(cases_dir.glob("*.yaml")):
         case = yaml.safe_load(path.read_text())
         t0 = time.perf_counter()
-        state = await run_review(graph, case["title"], case.get("body", ""), case["diff"])
+        run_id = uuid.uuid4()
+        state = await run_review(
+            graph,
+            case["title"],
+            case.get("body", ""),
+            case["diff"],
+            langsmith_extra={"run_id": run_id, "tags": ["eval"], "metadata": {"case": path.stem}},
+        )
         caught, fps = score(case.get("planted", []), state.get("findings", []))
+        if tracing_enabled():
+            attach_scores(run_id, len(case.get("planted", [])), caught, fps)
         results.append(
             CaseResult(
                 path.stem,
@@ -86,6 +98,23 @@ async def run(cases_dir: Path) -> list[CaseResult]:
         )
         print(f"{path.stem:<32} caught {caught}/{len(case.get('planted', []))}  fp {fps}")
     return results
+
+
+def attach_scores(run_id: uuid.UUID, planted: int, caught: int, fps: int) -> None:
+    """The eval's verdict lands on the case's trace in LangSmith as feedback.
+
+    Best effort: LangSmith being down must never change what the gate decides.
+    """
+    from langsmith.run_trees import get_cached_client
+
+    client = get_cached_client()  # the same client the trace went out on
+    once: dict[str, Any] = {"trace_id": run_id, "stop_after_attempt": 1}  # never stall the gate
+    try:
+        if planted:
+            client.create_feedback(run_id, key="recall", score=caught / planted, **once)
+        client.create_feedback(run_id, key="false_positives", score=fps, **once)
+    except Exception as exc:  # noqa: BLE001 - observability is not part of the verdict
+        print(f"  (langsmith feedback skipped: {exc})", file=sys.stderr)
 
 
 def summarize(results: list[CaseResult]) -> dict[str, float]:
@@ -107,6 +136,10 @@ def main() -> None:
     args = ap.parse_args()
 
     results = asyncio.run(run(args.cases))
+    if tracing_enabled():
+        from langsmith.run_trees import get_cached_client
+
+        get_cached_client().flush()  # send the last traces before the process exits
     summary = summarize(results)
     args.out.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")

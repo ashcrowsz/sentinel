@@ -17,6 +17,7 @@ dependencies = [
   "opentelemetry-instrumentation-fastapi>=0.46b0",
   "prometheus-client>=0.20",
   "pyyaml>=6.0",
+  "langsmith>=0.3",
 ]
 
 [project.optional-dependencies]

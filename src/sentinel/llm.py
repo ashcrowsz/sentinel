@@ -8,6 +8,8 @@ from typing import Any
 
 import httpx
 
+from sentinel.tracing import drop, traceable
+
 
 @dataclass
 class LLMResult:
@@ -27,6 +29,21 @@ def parse_json(text: str) -> Any:
     if start > 0 and end > start:
         t = t[start : end + 1]
     return json.loads(t)
+
+
+@traceable(run_type="llm", name="chat_completion", process_inputs=drop("base_url", "api_key"))
+async def chat_completion(base_url: str, api_key: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """One OpenAI-style call to LiteLLM, traced as an LLM run (messages, tokens, cost)."""
+    async with httpx.AsyncClient(timeout=300) as client:
+        r = await client.post(
+            f"{base_url}/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}"},
+            json=payload,
+        )
+        r.raise_for_status()
+        data: dict[str, Any] = r.json()
+    data["cost_usd"] = float(r.headers.get("x-litellm-response-cost", 0) or 0)
+    return data
 
 
 class LLM:
@@ -53,21 +70,18 @@ class LLM:
                 "type": "json_schema",
                 "json_schema": {"name": "output", "schema": json_schema, "strict": True},
             }
-        async with httpx.AsyncClient(timeout=300) as client:
-            r = await client.post(
-                f"{self.base_url}/v1/chat/completions",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                json=payload,
-            )
-            r.raise_for_status()
-            data = r.json()
+        data = await chat_completion(
+            self.base_url,
+            self.api_key,
+            payload,
+            langsmith_extra={"metadata": {"ls_provider": "litellm", "ls_model_name": self.model}},
+        )
         usage = data.get("usage", {})
-        cost = float(r.headers.get("x-litellm-response-cost", 0) or 0)
         return LLMResult(
             text=data["choices"][0]["message"]["content"],
             input_tokens=usage.get("prompt_tokens", 0),
             output_tokens=usage.get("completion_tokens", 0),
-            cost_usd=cost,
+            cost_usd=data["cost_usd"],
         )
 
     async def complete_json(

@@ -86,12 +86,35 @@ The miss is the interesting part: on the prompt-injection case the model correct
 
 | piece | status |
 |---|---|
-| **CI** on every push: ruff, mypy, pytest (49 tests), Docker build, Trivy (fails on HIGH/CRITICAL) | ✅ running |
+| **CI** on every push: ruff, mypy, pytest (51 tests), Docker build, Trivy (fails on HIGH/CRITICAL) | ✅ running |
 | **eval gate** in the release workflow: a worse prompt can't ship, like a failing test | ✅ in the workflow |
 | **local run**: Docker Compose + LiteLLM + LM Studio, reviewing real PRs through a GitHub App | ✅ verified live |
 | **CD**: image → Artifact Registry (Workload Identity Federation, no JSON keys) → tag bump → Argo CD | 🚧 written, not deployed |
 | **infra**: Terraform for GCP (VPC, registry, Secret Manager, the k3s VM, WIF) + Helm chart | 🚧 validates, nothing provisioned |
 | **observability**: Prometheus `/metrics`, OpenTelemetry for FastAPI | ✅ metrics live · 🚧 Grafana dashboard ([#3](https://github.com/ashcrowsz/sentinel/issues/3)) |
+| **LLM tracing**: LangSmith, opt-in, one trace per review + eval scores as feedback | ✅ wired, tested offline · 🚧 not yet run against a live LangSmith project |
+
+### traces (optional, LangSmith)
+
+Metrics tell you reviews got slower. A trace tells you *which* review, and what the model saw. With `LANGSMITH_TRACING=true` every review is one trace:
+
+```
+review_pr          repo · PR · SHA in metadata, tag "review"
+├─ parse           LangGraph reports its own nodes
+├─ gather
+├─ review
+│  └─ chat_completion   reviewer   prompt, JSON reply, tokens, cost
+└─ filter          what was dropped, and why, is in the state diff
+```
+
+`make eval` tags its runs `eval` and attaches **recall** and **false_positives** to each case's trace as feedback, so when a prompt change fails the gate, the case that got worse is one click away. The LiteLLM key is stripped from every span. Traces contain the PR diff: only switch it on for code that's allowed to leave your machine.
+
+```bash
+# .env
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=<your key>     # smith.langchain.com → Settings → API keys
+LANGSMITH_PROJECT=sentinel
+```
 
 ## repo-context MCP server
 
@@ -112,7 +135,7 @@ You need Docker, Python 3.11+, [LM Studio](https://lmstudio.ai) with `google/gem
    ```bash
    cp .env.example .env        # GITHUB_APP_ID, GITHUB_WEBHOOK_SECRET, LITELLM_MASTER_KEY
    python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
-   pytest -q                   # 49 tests, no network
+   pytest -q                   # 51 tests, no network
    docker compose up -d --build                    # api + worker + redis + litellm
    npx smee-client --url <your smee url> --target http://localhost:8000/webhook
    ```
@@ -129,6 +152,7 @@ src/sentinel/
   events.py         which GitHub events become which jobs
   security.py       HMAC-SHA256 signature check
   worker.py         arq worker, the slow half
+  tracing.py        optional LangSmith spans (LangGraph nodes trace themselves)
   review/           diff parsing, prompt, LangGraph agent, precision filters, suggestion fitting
   repair/           stop conditions, anti-cheat guard, sandbox Job manifest, repair graph
   mcp/              repo index + FastMCP server

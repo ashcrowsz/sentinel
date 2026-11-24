@@ -38,7 +38,16 @@ async def run_review_job(ctx: dict[str, Any], raw: dict[str, Any]) -> dict[str, 
     async with await ctx["gh"].client(job.installation_id) as gh:
         pr = (await gh.get(f"/repos/{job.repo}/pulls/{job.pr_number}")).json()
         diff = await get_pr_diff(gh, job.repo, job.pr_number)
-        state = await run_review(ctx["review_graph"], pr["title"], pr.get("body") or "", diff)
+        state = await run_review(
+            ctx["review_graph"],
+            pr["title"],
+            pr.get("body") or "",
+            diff,
+            langsmith_extra={
+                "tags": ["review"],
+                "metadata": {"repo": job.repo, "pr": job.pr_number, "sha": job.head_sha},
+            },
+        )
         findings = state.get("findings", [])
         summary = (
             state["output"].summary

@@ -16,6 +16,7 @@ from sentinel.review.filters import filter_findings
 from sentinel.review.prompts import REVIEW_SYSTEM, review_user_prompt
 from sentinel.review.schema import REVIEW_JSON_SCHEMA, Finding, ReviewOutput
 from sentinel.telemetry import LLM_COST, REVIEW_COMMENTS, REVIEW_SECONDS
+from sentinel.tracing import drop, traceable
 
 
 class ReviewState(TypedDict, total=False):
@@ -77,7 +78,9 @@ def build_graph(llm: LLM, ctx: ContextProvider, settings: Settings) -> Any:
     return g.compile()
 
 
+@traceable(run_type="chain", name="review_pr", process_inputs=drop("graph"))
 async def run_review(graph: Any, title: str, body: str, diff: str) -> ReviewState:
+    """Root span of a review trace. Callers add repo / PR / SHA via langsmith_extra."""
     started = time.perf_counter()
     state: ReviewState = await graph.ainvoke({"title": title, "body": body, "raw_diff": diff})
     REVIEW_SECONDS.observe(time.perf_counter() - started)
