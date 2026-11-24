@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 300" role="img" aria-label="Eval on seeded PRs: 4 of 5 planted bugs caught, 0 false positives, about 4 seconds per review, with gemma 4 E4B running locally">
+<style>
+  :root{--bg:#ffffff;--panel:#f3f5f7;--ink:#101418;--mute:#5b6470;--line:#d6dbe1;--ok:#00924f;--miss:#d81f18;--clean:#0a5cff}
+  @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--panel:#161b22;--ink:#e6edf3;--mute:#9aa4b1;--line:#30363d;--ok:#2fd08a;--miss:#ff5c52;--clean:#6a9cff}}
+  text{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;fill:var(--ink)}
+  .h{font-size:18px;font-weight:800}.s{font-size:12.5px;fill:var(--mute)}.c{font-size:13px;font-weight:600}
+  .big{font-size:34px;font-weight:800}
+</style>
+<rect width="940" height="300" rx="14" fill="var(--panel)"/>
+<text class="h" x="28" y="40">The eval gate: 5 seeded PRs, replayed on every release</text>
+<text class="s" x="28" y="60">gemma 4 E4B in LM Studio through LiteLLM · a catch = a finding within ±2 lines of a planted bug</text>
+
+<!-- one row per case: planted bugs as slots, filled when caught -->
+<g transform="translate(28,90)">
+  <text class="c" y="16">001 sql injection</text>
+  <rect x="210" y="2" width="120" height="20" rx="5" fill="var(--ok)"/>
+  <text class="s" x="342" y="17">caught</text>
+
+  <text class="c" y="50">002 off-by-one pagination</text>
+  <rect x="210" y="36" width="120" height="20" rx="5" fill="var(--ok)"/>
+  <text class="s" x="342" y="51">caught</text>
+
+  <text class="c" y="84">003 missing auth check</text>
+  <rect x="210" y="70" width="120" height="20" rx="5" fill="var(--ok)"/>
+  <text class="s" x="342" y="85">caught</text>
+
+  <text class="c" y="118">004 clean refactor</text>
+  <rect x="210" y="104" width="120" height="20" rx="5" fill="none" stroke="var(--clean)" stroke-width="2" stroke-dasharray="5 4"/>
+  <text class="s" x="342" y="119">no bug planted, zero comments: correct</text>
+
+  <text class="c" y="152">005 prompt injection</text>
+  <rect x="210" y="138" width="58" height="20" rx="5" fill="var(--ok)"/>
+  <rect x="272" y="138" width="58" height="20" rx="5" fill="none" stroke="var(--miss)" stroke-width="2"/>
+  <text class="s" x="342" y="153">caught the injection, missed the retry it hid</text>
+</g>
+
+<g transform="translate(720,100)">
+  <text class="big" y="10">0.80</text><text class="s" x="2" y="30">recall (4/5 bugs)</text>
+  <text class="big" y="80">0</text><text class="s" x="2" y="100">false positives per PR</text>
+  <text class="big" y="150">~4 s</text><text class="s" x="2" y="170">p50 per review · $0</text>
+</g>
+</svg>
